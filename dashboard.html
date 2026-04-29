@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SELA — Your AI Companion</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0B1220;
+      --surface: rgba(5, 13, 30, 0.92);
+      --border: #243B63;
+      --accent: #A5B4FC;
+      --accent2: #06B6D4;
+      --text: #E2E8F0;
+      --muted: #94A3B8;
+      --star: #FBBF24;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0B1220 0%, #1E3A8A 55%, #4338CA 100%);
+      min-height: 100vh;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── Bubbles ── */
+    .bubbles {
+      position: fixed; inset: 0; overflow: hidden; z-index: 0; pointer-events: none;
+    }
+    .bubble {
+      position: absolute; bottom: -120px; border-radius: 50%; opacity: 0.13;
+      animation: floatUp linear infinite;
+      background: radial-gradient(circle at 30% 30%, #6366f1, #06b6d4);
+    }
+    .bubble:nth-child(1)  { width:40px;  height:40px;  left:7%;  animation-duration:9s;  animation-delay:0s;   }
+    .bubble:nth-child(2)  { width:20px;  height:20px;  left:18%; animation-duration:12s; animation-delay:2s;   }
+    .bubble:nth-child(3)  { width:60px;  height:60px;  left:28%; animation-duration:10s; animation-delay:4s;   }
+    .bubble:nth-child(4)  { width:30px;  height:30px;  left:42%; animation-duration:8s;  animation-delay:1s;   }
+    .bubble:nth-child(5)  { width:50px;  height:50px;  left:55%; animation-duration:14s; animation-delay:3s;   }
+    .bubble:nth-child(6)  { width:25px;  height:25px;  left:65%; animation-duration:11s; animation-delay:5s;   }
+    .bubble:nth-child(7)  { width:70px;  height:70px;  left:74%; animation-duration:13s; animation-delay:0.5s; }
+    .bubble:nth-child(8)  { width:35px;  height:35px;  left:84%; animation-duration:9s;  animation-delay:2.5s; }
+    @keyframes floatUp {
+      0%   { transform: translateY(0) scale(1);        opacity: 0.13; }
+      50%  { opacity: 0.2; }
+      100% { transform: translateY(-110vh) scale(1.1); opacity: 0; }
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(11, 18, 32, 0.75);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-size: 1.5rem; font-weight: 800; letter-spacing: 2px;
+      color: var(--accent);
+    }
+    .nav-logo span { color: var(--accent2); }
+    .nav-actions { display: flex; gap: 12px; }
+
+    .btn {
+      cursor: pointer; border-radius: 12px; font-size: 0.875rem;
+      font-weight: 600; padding: 9px 22px; transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .btn-outline {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-primary {
+      background: linear-gradient(135deg, #4F46E5, #06B6D4);
+      border: none; color: #fff;
+      box-shadow: 0 4px 18px rgba(79,70,229,0.35);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(79,70,229,0.5); }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 100px 40px 60px;
+    }
+    .hero-inner {
+      max-width: 1100px; width: 100%;
+      display: flex; align-items: center; gap: 64px;
+      flex-wrap: wrap;
+    }
+
+    /* avatar */
+    .avatar-wrap {
+      flex-shrink: 0;
+      position: relative;
+      width: 300px; height: 360px;
+    }
+    .avatar-glow {
+      position: absolute; inset: -24px; border-radius: 28px;
+      background: radial-gradient(circle, rgba(99,102,241,0.4) 0%, transparent 70%);
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1);    opacity: 0.7; }
+      50%       { transform: scale(1.06); opacity: 1;   }
+    }
+    .avatar-img {
+      width: 100%; height: 100%;
+      border-radius: 24px;
+      object-fit: cover;
+      object-position: top center;
+      border: 2px solid rgba(165,180,252,0.35);
+      box-shadow: 0 8px 48px rgba(99,102,241,0.35), 0 2px 12px rgba(0,0,0,0.5);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .avatar-wrap:hover .avatar-img {
+      transform: scale(1.03) translateY(-4px);
+      box-shadow: 0 16px 64px rgba(6,182,212,0.45), 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .avatar-badge {
+      position: absolute; bottom: 14px; right: 14px;
+      background: linear-gradient(135deg, #4F46E5, #06B6D4);
+      color: #fff; font-size: 0.7rem; font-weight: 700;
+      padding: 4px 10px; border-radius: 20px;
+      letter-spacing: 1px;
+    }
+
+    /* hero text */
+    .hero-text { flex: 1; min-width: 280px; }
+    .hero-eyebrow {
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 3px;
+      color: var(--accent2); text-transform: uppercase; margin-bottom: 14px;
+    }
+    .hero-title {
+      font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; line-height: 1.15;
+      margin-bottom: 20px;
+    }
+    .hero-title .highlight {
+      background: linear-gradient(90deg, #A5B4FC, #06B6D4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-desc {
+      font-size: 1.05rem; line-height: 1.75; color: #B8C3D9;
+      max-width: 520px; margin-bottom: 36px;
+    }
+    .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-lg { padding: 13px 32px; font-size: 1rem; border-radius: 14px; }
+
+    /* ── Divider ── */
+    .section-divider {
+      position: relative; z-index: 1;
+      text-align: center; padding: 0 40px;
+    }
+    .section-divider h2 {
+      font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700;
+      color: var(--text); margin-bottom: 8px;
+    }
+    .section-divider p { color: var(--muted); font-size: 0.95rem; }
+    .divider-line {
+      width: 60px; height: 3px; margin: 16px auto 0;
+      background: linear-gradient(90deg, #4F46E5, #06B6D4);
+      border-radius: 2px;
+    }
+
+    /* ── Features strip ── */
+    .features {
+      position: relative; z-index: 1;
+      display: flex; justify-content: center; flex-wrap: wrap;
+      gap: 20px; padding: 60px 40px;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; padding: 28px 24px;
+      flex: 1; min-width: 200px; max-width: 240px;
+      text-align: center;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+    .feature-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+    .feature-icon { font-size: 2rem; margin-bottom: 12px; }
+    .feature-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+    .feature-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── Reviews ── */
+    .reviews-section {
+      position: relative; z-index: 1;
+      padding: 20px 40px 80px;
+    }
+    .reviews-grid {
+      max-width: 1100px; margin: 40px auto 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .review-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; padding: 26px 24px;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+    .review-card:hover { transform: translateY(-3px); border-color: rgba(165,180,252,0.4); }
+    .review-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .review-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, #4F46E5, #06B6D4);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1rem; color: #fff; flex-shrink: 0;
+    }
+    .review-meta { flex: 1; }
+    .review-name { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+    .review-role { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .stars { color: var(--star); font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 10px; }
+    .review-text { font-size: 0.875rem; color: #B8C3D9; line-height: 1.65; }
+
+    /* ── CTA Banner ── */
+    .cta-banner {
+      position: relative; z-index: 1;
+      margin: 0 40px 80px;
+      max-width: 1100px; margin-left: auto; margin-right: auto;
+      background: linear-gradient(135deg, rgba(79,70,229,0.25), rgba(6,182,212,0.15));
+      border: 1px solid rgba(165,180,252,0.25);
+      border-radius: 24px; padding: 52px 40px;
+      text-align: center;
+    }
+    .cta-banner h2 { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 800; margin-bottom: 12px; }
+    .cta-banner p { color: var(--muted); margin-bottom: 28px; font-size: 0.95rem; }
+    .cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+    /* ── Footer ── */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 24px 40px;
+      border-top: 1px solid var(--border);
+      color: var(--muted); font-size: 0.8rem;
+    }
+
+    @media (max-width: 700px) {
+      nav { padding: 14px 20px; }
+      .hero { padding: 90px 20px 40px; }
+      .hero-inner { gap: 36px; justify-content: center; text-align: center; }
+      .hero-cta { justify-content: center; }
+      .avatar-wrap { width: 220px; height: 264px; }
+      .features, .reviews-section { padding-left: 20px; padding-right: 20px; }
+      .cta-banner { margin: 0 20px 60px; padding: 36px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bubbles">
+    <span class="bubble"></span><span class="bubble"></span>
+    <span class="bubble"></span><span class="bubble"></span>
+    <span class="bubble"></span><span class="bubble"></span>
+    <span class="bubble"></span><span class="bubble"></span>
+  </div>
+
+  <!-- Nav -->
+  <nav>
+    <div class="nav-logo">SEL<span>A</span></div>
+    <div class="nav-actions">
+      <a href="login.html"><button class="btn btn-outline">Sign In</button></a>
+      <a href="register.html"><button class="btn btn-primary">Sign Up</button></a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="avatar-wrap">
+        <div class="avatar-glow"></div>
+        <img src="avatar/assets/SELA Photo.png" alt="SELA Avatar" class="avatar-img" />
+        <span class="avatar-badge">AI · LIVE</span>
+      </div>
+
+      <div class="hero-text">
+        <p class="hero-eyebrow">Meet your AI companion</p>
+        <h1 class="hero-title">
+          Hi, I'm <span class="highlight">SELA</span> —<br />
+          here to listen &amp; help.
+        </h1>
+        <p class="hero-desc">
+          I'm a Socially Aware Embodied Language Agent. Talk to me, share what's on your mind,
+          and together we'll explore solutions for everyday life. Whether you're feeling great,
+          going through a tough moment, or just need someone to think things through with —
+          I'm here, and I understand.
+        </p>
+        <div class="hero-cta">
+          <a href="register.html"><button class="btn btn-primary btn-lg">Get Started Free</button></a>
+          <a href="login.html"><button class="btn btn-outline btn-lg">Sign In</button></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <div class="section-divider">
+    <h2>What SELA can do for you</h2>
+    <p>Designed to understand, respond, and genuinely connect.</p>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">🧠</div>
+      <h3>Emotion Aware</h3>
+      <p>SELA reads the tone of your words and responds with empathy, not just answers.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🗣️</div>
+      <h3>Natural Conversation</h3>
+      <p>Talk freely — no commands, no scripts. Just a real, flowing conversation.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌿</div>
+      <h3>Always Supportive</h3>
+      <p>Good day or bad day, SELA is a calm, non-judgmental presence ready to help.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Private &amp; Safe</h3>
+      <p>Your conversations stay yours. SELA is built with your privacy in mind.</p>
+    </div>
+  </div>
+
+  <!-- Reviews -->
+  <section class="reviews-section">
+    <div class="section-divider">
+      <h2>What people are saying</h2>
+      <p>Real experiences from people who've talked with SELA.</p>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="reviews-grid">
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">A</div>
+          <div class="review-meta">
+            <div class="review-name">Aisha R.</div>
+            <div class="review-role">University Student</div>
+          </div>
+        </div>
+        <div class="stars">★★★★★</div>
+        <p class="review-text">"I was going through a stressful exam period and SELA genuinely helped me calm down and think clearly. It felt like talking to someone who actually gets it."</p>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">M</div>
+          <div class="review-meta">
+            <div class="review-name">Marcus T.</div>
+            <div class="review-role">Software Developer</div>
+          </div>
+        </div>
+        <div class="stars">★★★★★</div>
+        <p class="review-text">"The emotional awareness is impressive. SELA picked up on my frustration and shifted the conversation in a way that actually helped me work through the problem."</p>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">S</div>
+          <div class="review-meta">
+            <div class="review-name">Sara K.</div>
+            <div class="review-role">Healthcare Worker</div>
+          </div>
+        </div>
+        <div class="stars">★★★★☆</div>
+        <p class="review-text">"After long shifts I just need to decompress. SELA is a great listener — no judgment, no advice unless I ask for it. That means a lot."</p>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">J</div>
+          <div class="review-meta">
+            <div class="review-name">James L.</div>
+            <div class="review-role">Anonymous</div>
+          </div>
+        </div>
+        <div class="stars">★★★★★</div>
+        <p class="review-text">"I wasn't sure what to expect, but the conversation felt surprisingly natural. SELA doesn't just respond — it actually listens."</p>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">N</div>
+          <div class="review-meta">
+            <div class="review-name">Nadia P.</div>
+            <div class="review-role">Teacher</div>
+          </div>
+        </div>
+        <div class="stars">★★★★★</div>
+        <p class="review-text">"I recommended SELA to a few of my students who were struggling with anxiety. The feedback has been really positive — it's calm, clear, and kind."</p>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">R</div>
+          <div class="review-meta">
+            <div class="review-name">Ravi M.</div>
+            <div class="review-role">Entrepreneur</div>
+          </div>
+        </div>
+        <div class="stars">★★★★☆</div>
+        <p class="review-text">"Great for bouncing ideas and thinking out loud. SELA asks the right questions and helps me see things from a different angle."</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <div class="cta-banner">
+    <h2>Ready to start your first conversation?</h2>
+    <p>Join SELA today — it only takes a moment, and it's completely free.</p>
+    <div class="cta-actions">
+      <a href="register.html"><button class="btn btn-primary btn-lg">Create Your Account</button></a>
+      <a href="login.html"><button class="btn btn-outline btn-lg">Sign In</button></a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 SELA — Socially Aware Embodied Language Agent. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SELA - Login</title>
+    <link rel="stylesheet" href="auth-styles.css">
+    <style>
+        .pw-wrap { position: relative; }
+        .pw-wrap input { width: 100%; padding-right: 42px; }
+        .pw-toggle {
+            position: absolute; right: 12px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            color: #94A3B8; font-size: 1rem; padding: 0;
+        }
+        .pw-toggle:hover { color: #A5B4FC; }
+        .login-hint {
+            margin-top: 14px; padding: 12px 14px;
+            background: rgba(0,0,0,0.35); border: 1px solid #243B63;
+            border-radius: 10px; font-size: 0.78rem; color: #94A3B8;
+        }
+        .login-hint b { color: #A5B4FC; }
+        .login-hint a { color: #06B6D4; text-decoration: none; }
+        .login-hint a:hover { text-decoration: underline; }
+        .reset-form { display: none; margin-top: 14px; }
+        .reset-form input {
+            width: 100%; padding: 9px 12px; border-radius: 8px;
+            border: 1px solid #243B63; background: rgba(8,21,47,0.7);
+            color: #E2E8F0; font-size: 0.85rem; margin-bottom: 8px;
+        }
+        .reset-form input:focus { outline: none; border-color: #4F46E5; }
+        .btn-small {
+            padding: 8px 16px; border-radius: 8px; font-size: 0.82rem;
+            font-weight: 600; cursor: pointer; border: none;
+            background: linear-gradient(135deg, #4F46E5, #06B6D4);
+            color: #fff; width: 100%;
+        }
+        .tab-row { display: flex; gap: 0; margin-bottom: 20px; border-radius: 10px; overflow: hidden; border: 1px solid #243B63; }
+        .tab-btn {
+            flex: 1; padding: 9px; background: transparent; border: none;
+            color: #94A3B8; font-size: 0.82rem; cursor: pointer; font-family: inherit;
+            transition: all 0.2s;
+        }
+        .tab-btn.active { background: rgba(79,70,229,0.25); color: #A5B4FC; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="bubbles">
+        <span class="bubble"></span><span class="bubble"></span>
+        <span class="bubble"></span><span class="bubble"></span>
+        <span class="bubble"></span><span class="bubble"></span>
+        <span class="bubble"></span><span class="bubble"></span>
+        <span class="bubble"></span><span class="bubble"></span>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="logo">
+                <h1>SELA</h1>
+                <p>Socially-aware Embodied Language Agent</p>
+            </div>
+
+            <form id="loginForm" class="auth-form">
+                <h2>Welcome Back</h2>
+                <p class="subtitle">Sign in to continue your conversation</p>
+
+                <!-- username or email toggle -->
+                <div class="tab-row">
+                    <button type="button" class="tab-btn active" onclick="setLoginMode('username', this)">Username</button>
+                    <button type="button" class="tab-btn" onclick="setLoginMode('email', this)">Email</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginId" id="loginIdLabel">Username</label>
+                    <input type="text" id="loginId" name="loginId" required placeholder="Enter your username" autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="pw-wrap">
+                        <input type="password" id="password" name="password" required placeholder="Enter your password" autocomplete="current-password">
+                        <button type="button" class="pw-toggle" onclick="togglePw()" title="Show/hide password">👁</button>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox">
+                        <input type="checkbox" id="remember">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-link" onclick="toggleReset(event)">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn-primary">Sign In</button>
+
+                <div class="divider"><span>or</span></div>
+
+                <p class="switch-auth">
+                    Don't have an account?
+                    <a href="register.html">Create Account</a>
+                </p>
+            </form>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <!-- Reset password panel -->
+            <div class="reset-form" id="resetPanel">
+                <p style="font-size:0.82rem; color:#94A3B8; margin-bottom:8px;">Enter your email to reset your password:</p>
+                <input type="email" id="resetEmail" placeholder="Your registered email" />
+                <input type="password" id="resetNewPw" placeholder="New password (min 6 chars)" />
+                <button class="btn-small" onclick="doReset()">Reset Password</button>
+                <div id="resetMsg" style="margin-top:8px; font-size:0.78rem; color:#34d399;"></div>
+            </div>
+
+            <!-- Debug helper -->
+            <div style="margin-top:14px; text-align:center;">
+                <button type="button" onclick="debugShowUsers()"
+                    style="background:none;border:none;color:#4F46E5;font-size:0.72rem;cursor:pointer;text-decoration:underline;">
+                    Check saved accounts in this browser
+                </button>
+                <div id="debugInfo" class="login-hint" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        let loginMode = 'username';
+
+        function setLoginMode(mode, btn) {
+            loginMode = mode;
+            document.getElementById('loginIdLabel').textContent = mode === 'email' ? 'Email' : 'Username';
+            document.getElementById('loginId').placeholder = mode === 'email' ? 'Enter your email' : 'Enter your username';
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function togglePw() {
+            const inp = document.getElementById('password');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+        }
+
+        function toggleReset(e) {
+            e.preventDefault();
+            const panel = document.getElementById('resetPanel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function doReset() {
+            const email = document.getElementById('resetEmail').value.trim();
+            const newPw = document.getElementById('resetNewPw').value;
+            const msg   = document.getElementById('resetMsg');
+
+            if (!email || newPw.length < 6) {
+                msg.style.color = '#f87171';
+                msg.textContent = 'Enter a valid email and a password of at least 6 characters.';
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('selaUsers') || '[]');
+            const idx = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+
+            if (idx === -1) {
+                msg.style.color = '#f87171';
+                msg.textContent = 'No account found with that email.';
+                return;
+            }
+
+            users[idx].password = newPw;
+            localStorage.setItem('selaUsers', JSON.stringify(users));
+            msg.style.color = '#34d399';
+            msg.textContent = '✅ Password updated! You can now sign in.';
+            document.getElementById('resetPanel').style.display = 'none';
+        }
+
+        function debugShowUsers() {
+            const box = document.getElementById('debugInfo');
+            const users = JSON.parse(localStorage.getItem('selaUsers') || '[]');
+            if (users.length === 0) {
+                box.innerHTML = '⚠️ No accounts found in this browser. <a href="register.html">Create one here.</a>';
+            } else {
+                box.innerHTML = '✅ ' + users.length + ' account(s) found:<br>' +
+                    users.map(u => '• <b>' + u.username + '</b> — ' + u.email).join('<br>');
+            }
+            box.style.display = 'block';
+        }
+
+        // Override login to support email mode
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const val = document.getElementById('loginId').value.trim();
+            const pw  = document.getElementById('password').value;
+            const users = JSON.parse(localStorage.getItem('selaUsers') || '[]');
+
+            let user;
+            if (loginMode === 'email') {
+                user = users.find(u => u.email.toLowerCase() === val.toLowerCase() && u.password === pw);
+            } else {
+                user = users.find(u => u.username.toLowerCase() === val.toLowerCase() && u.password === pw);
+            }
+
+            if (user) {
+                localStorage.setItem('selaCurrentUser', JSON.stringify({
+                    username: user.username,
+                    fullname: user.fullname,
+                    email: user.email,
+                    loginTime: new Date().toISOString()
+                }));
+                window.location.href = 'index.html';
+            } else {
+                // helpful hint
+                const exists = users.find(u =>
+                    loginMode === 'email'
+                        ? u.email.toLowerCase() === val.toLowerCase()
+                        : u.username.toLowerCase() === val.toLowerCase()
+                );
+                const msg = exists
+                    ? 'Wrong password for that account.'
+                    : (loginMode === 'email' ? 'No account with that email.' : 'Username not found.');
+                showError(msg);
+            }
+        }, true); // true = capture, runs before auth.js listener
+    </script>
+</body>
+</html>

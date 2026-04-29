@@ -1,0 +1,292 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0B1220, #1E3A8A, #4338CA);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 450px;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.auth-box {
+    background: rgba(5, 13, 30, 0.96);
+    border: 1px solid #243B63;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo h1 {
+    font-size: 2.5em;
+    color: #A5B4FC;
+    margin-bottom: 5px;
+}
+
+.logo p {
+    color: #94A3B8;
+    font-size: 0.9em;
+}
+
+.auth-form h2 {
+    color: #E5E7EB;
+    margin-bottom: 10px;
+    font-size: 1.8em;
+}
+
+.subtitle {
+    color: #B8C3D9;
+    margin-bottom: 25px;
+    font-size: 0.95em;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: #E2E8F0;
+    font-weight: 500;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    background: #0A1733;
+    border: 1px solid #2A426B;
+    border-radius: 10px;
+    font-size: 1em;
+    color: #F1F5F9;
+    transition: all 0.3s ease;
+}
+
+.form-group input::placeholder {
+    color: #6F84A8;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #22D3EE;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.25);
+}
+
+.form-group small {
+    display: block;
+    color: #6F84A8;
+    font-size: 0.85em;
+    margin-top: 5px;
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #C7D2E3;
+}
+
+.checkbox input {
+    margin-right: 8px;
+    cursor: pointer;
+    accent-color: #4F46E5;
+    border: 1px solid #5B6B86;
+}
+
+.forgot-link {
+    color: #38BDF8;
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: color 0.3s ease;
+}
+
+.forgot-link:hover {
+    color: #7DD3FC;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #4F46E5, #06B6D4);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.05em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.35);
+    filter: brightness(1.1);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.divider {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: #334155;
+}
+
+.divider::before { left: 0; }
+.divider::after  { right: 0; }
+
+.divider span {
+    background: rgba(8, 21, 47, 0.92);
+    padding: 0 15px;
+    color: #6F84A8;
+    font-size: 0.9em;
+}
+
+.switch-auth {
+    text-align: center;
+    color: #94A3B8;
+    font-size: 0.95em;
+}
+
+.switch-auth a {
+    color: #6366F1;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.switch-auth a:hover {
+    color: #818CF8;
+}
+
+.error-message {
+    display: none;
+    padding: 12px;
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 8px;
+    color: #F87171;
+    margin-top: 15px;
+    font-size: 0.9em;
+}
+
+.error-message.show {
+    display: block;
+    animation: shake 0.5s ease;
+}
+
+.success-message {
+    display: none;
+    padding: 12px;
+    background: rgba(52, 211, 153, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    border-radius: 8px;
+    color: #34D399;
+    margin-top: 15px;
+    font-size: 0.9em;
+}
+
+.success-message.show {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%       { transform: translateX(-10px); }
+    75%       { transform: translateX(10px); }
+}
+
+@media (max-width: 480px) {
+    .auth-box {
+        padding: 30px 20px;
+    }
+    .logo h1 {
+        font-size: 2em;
+    }
+    .auth-form h2 {
+        font-size: 1.5em;
+    }
+}
+
+.bubbles {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.bubble {
+    position: absolute;
+    bottom: -120px;
+    border-radius: 50%;
+    opacity: 0.15;
+    animation: floatUp linear infinite;
+    background: radial-gradient(circle at 30% 30%, #6366f1, #06b6d4);
+}
+
+.bubble:nth-child(1)  { width: 40px;  height: 40px;  left: 8%;   animation-duration: 9s;  animation-delay: 0s;   }
+.bubble:nth-child(2)  { width: 20px;  height: 20px;  left: 18%;  animation-duration: 12s; animation-delay: 2s;   }
+.bubble:nth-child(3)  { width: 60px;  height: 60px;  left: 28%;  animation-duration: 10s; animation-delay: 4s;   }
+.bubble:nth-child(4)  { width: 30px;  height: 30px;  left: 40%;  animation-duration: 8s;  animation-delay: 1s;   }
+.bubble:nth-child(5)  { width: 50px;  height: 50px;  left: 52%;  animation-duration: 14s; animation-delay: 3s;   }
+.bubble:nth-child(6)  { width: 25px;  height: 25px;  left: 62%;  animation-duration: 11s; animation-delay: 5s;   }
+.bubble:nth-child(7)  { width: 70px;  height: 70px;  left: 72%;  animation-duration: 13s; animation-delay: 0.5s; }
+.bubble:nth-child(8)  { width: 35px;  height: 35px;  left: 82%;  animation-duration: 9s;  animation-delay: 2.5s; }
+.bubble:nth-child(9)  { width: 45px;  height: 45px;  left: 90%;  animation-duration: 10s; animation-delay: 6s;   }
+.bubble:nth-child(10) { width: 22px;  height: 22px;  left: 3%;   animation-duration: 15s; animation-delay: 1.5s; }
+
+@keyframes floatUp {
+    0%   { transform: translateY(0) scale(1);    opacity: 0.15; }
+    50%  { opacity: 0.2; }
+    100% { transform: translateY(-110vh) scale(1.1); opacity: 0; }
+}
+
+.auth-container {
+    position: relative;
+    z-index: 1;
+}

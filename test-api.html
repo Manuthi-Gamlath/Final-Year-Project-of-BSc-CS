@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>D-ID API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>D-ID API Connection Test</h1>
+        <p>This will test if your D-ID API key is working correctly.</p>
+        
+        <button onclick="testAPI()">Test API Connection</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'bWFudXNlbmFuZ2FAZ21haWwuY29t:ULFDGqNXkfZA1a7G5V1p3';
+        
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing API connection...';
+            
+            try {
+                // Test 1: Check API authentication
+                resultDiv.innerHTML += '\n\n1. Testing authentication...';
+                
+                const response = await fetch('https://api.d-id.com/talks/streams', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${btoa(API_KEY + ':')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        source_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800',
+                        driver_url: 'bank://lively'
+                    })
+                });
+                
+                resultDiv.innerHTML += `\nStatus: ${response.status} ${response.statusText}`;
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML += `\n\n<span class="error">ERROR:</span>\n${errorText}`;
+                    
+                    if (response.status === 401) {
+                        resultDiv.innerHTML += '\n\n<span class="error">❌ API Key is INVALID</span>';
+                        resultDiv.innerHTML += '\n\nPlease check:';
+                        resultDiv.innerHTML += '\n1. Go to https://studio.d-id.com/';
+                        resultDiv.innerHTML += '\n2. Login and go to Settings → API Keys';
+                        resultDiv.innerHTML += '\n3. Copy the correct API key';
+                        resultDiv.innerHTML += '\n4. Update config.js with the new key';
+                    } else if (response.status === 402) {
+                        resultDiv.innerHTML += '\n\n<span class="error">❌ No credits available</span>';
+                        resultDiv.innerHTML += '\n\nYour D-ID account has no credits.';
+                        resultDiv.innerHTML += '\nFree tier: 10 minutes/month';
+                        resultDiv.innerHTML += '\nCheck your usage at: https://studio.d-id.com/';
+                    }
+                    return;
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML += '\n\n<span class="success">✅ API Connection Successful!</span>';
+                resultDiv.innerHTML += '\n\nStream ID: ' + data.id;
+                resultDiv.innerHTML += '\nSession ID: ' + data.session_id;
+                resultDiv.innerHTML += '\n\n<span class="success">Your API key is working correctly!</span>';
+                
+                // Cleanup - delete the test stream
+                await fetch(`https://api.d-id.com/talks/streams/${data.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Basic ${btoa(API_KEY + ':')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: data.session_id
+                    })
+                });
+                
+            } catch (error) {
+                resultDiv.innerHTML += `\n\n<span class="error">ERROR:</span>\n${error.message}`;
+                resultDiv.innerHTML += '\n\nPossible issues:';
+                resultDiv.innerHTML += '\n1. No internet connection';
+                resultDiv.innerHTML += '\n2. Firewall blocking D-ID';
+                resultDiv.innerHTML += '\n3. CORS policy (try different browser)';
+            }
+        }
+    </script>
+</body>
+</html>
