@@ -221,7 +221,7 @@ def infer_video(
     video_path: str,
     audio_path: Optional[str] = None,  # not used by InternVideo2.5 in your demo; kept for API compatibility
     question: str = "detect objects in the video?",
-    num_segments: int = 60,
+    num_segments: int = 16,
     max_num_tiles_per_frame: int = 1,
     get_frame_by_duration: bool = False,
     input_size: int = 448,
@@ -250,7 +250,7 @@ def infer_video(
         )
 
         # move to model device (same as your demo)
-        pixel_values = pixel_values.to(_model.device)
+        pixel_values = pixel_values.to(_model.device).half()
 
         # build prefix (same as your demo)
         video_prefix = "".join([f"Frame{i+1}: <image>\n" for i in range(len(num_patches_list))])
