@@ -1,24 +1,22 @@
-# Python
+# ── Python cache ──────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-.Python
 *.egg-info/
 dist/
 build/
-.eggs/
 
-# Virtual environments
+# ── Virtual environments ───────────────────────────────────
 venv/
 env/
 .env
 
-# Jupyter
+# ── Jupyter ────────────────────────────────────────────────
 .ipynb_checkpoints/
 *.ipynb
 
-# Model weights & large files
+# ── Model weights & large binary files ────────────────────
 *.safetensors
 *.bin
 *.pt
@@ -26,7 +24,7 @@ env/
 *.ckpt
 tokenizer.model
 
-# Videos & media
+# ── Media / video / audio ─────────────────────────────────
 *.mp4
 *.webm
 *.avi
@@ -34,29 +32,38 @@ tokenizer.model
 *.wav
 *.mp3
 
-# Uploads / derived outputs
+# ── Runtime folders ───────────────────────────────────────
 uploads/
 output_model/
+my_saved_config/
 
-# Logs
+# ── Logs ──────────────────────────────────────────────────
 *.log
 log_spat
 log.txt
 
-# Results / data
+# ── Results / data files ──────────────────────────────────
 *.csv
 *.xlsx
-*.json
 all_results.json
 generated_predictions1.txt
 missing_videos.log
 predictions.txt
 
-# Images
+# ── Images ────────────────────────────────────────────────
 *.png
 *.jpg
 *.jpeg
 
-# OS
+# ── Tokenizer / HuggingFace artefacts (auto-generated) ────
+added_tokens.json
+generation_config.json
+special_tokens_map.json
+tokenizer_config.json
+tokenizer_vocab.txt
+config.json
+
+# ── OS ────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+~$*
