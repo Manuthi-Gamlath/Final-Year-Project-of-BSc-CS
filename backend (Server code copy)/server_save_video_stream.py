@@ -1,6 +1,6 @@
 # app.py
 # Run:
-#uvicorn server_save_video_stream:app --host 0.0.0.0 --port 8891
+#uvicorn server_save_video_stream:app --host 0.0.0.0 --port 8888
 
 import os
 import json
@@ -86,7 +86,7 @@ def load_model_once(force: bool = False):
         return
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, trust_remote_code=True)
-    model = InternVLChatModel.from_pretrained(MODEL_PATH, trust_remote_code=True).cuda()
+    model = InternVLChatModel.from_pretrained(MODEL_PATH, trust_remote_code=True,torch_dtype=torch.float16).cuda()
     model.eval()
 
 
@@ -297,7 +297,7 @@ Rules:
 """.strip()
 
 
-def build_meta_question(text: str):
+def build_meta_question3(text: str):
     safe_text = str(text or "").replace("{", "(").replace("}", ")").strip()
     return f"""
 Analyze the video and the user utterance.
@@ -327,6 +327,45 @@ Rules:
 - if the user appears upset, confused, or serious, prefer calm supportive choices such as neutral, sad, Acknowledging, or Nod when appropriate
 - if the user appears happy or greeting the system, happy or Waving may be used when appropriate
 - do not choose extreme reactions unless clearly justified by both video and utterance
+""".strip()
+
+def build_meta_question(text: str):
+    safe_text = str(text or "").replace("{", "(").replace("}", ")").strip()
+
+    return f"""
+Analyze the video and the user utterance.
+
+User utterance: "{safe_text}"
+
+Return ONLY valid JSON with exactly these keys:
+{{
+  "avatar_emotion": "neutral|happy|sad|angry|fear|disgust|surprised",
+  "mixamo_gesture": "Waving|Nod|Thinking|Agreeing|Acknowledging|Clap"
+}}
+
+Task:
+- detect the user's visible emotion from the video
+- understand the user's visible gesture from the video
+- infer the emotional meaning and intent of the user utterance
+- combine visual cues and utterance meaning to choose a natural assistant response
+- choose avatar_emotion for the assistant avatar, not as a direct copy of the user emotion
+- choose mixamo_gesture as an assistant-side response gesture, not simply the user's exact gesture
+
+Rules:
+- JSON only
+- no markdown
+- no extra text
+- avatar_emotion must be socially appropriate for an assistant avatar
+- avatar_emotion should reflect the assistant's natural response to the user's situation
+- give strong importance to the meaning of the utterance, especially when the visual emotion is unclear
+- if the utterance indicates success, happiness, greeting, appreciation, or other positive intent, the assistant may respond with a warm positive emotion
+- if the utterance indicates sadness, worry, confusion, frustration, or seriousness, the assistant should respond calmly and supportively
+- if the visual emotion and utterance conflict, choose the response that is safest, most empathetic, and most socially appropriate
+- mixamo_gesture must fit the assistant's response, the user's visible behavior, and the meaning of the utterance
+- prefer subtle gestures for serious, uncertain, or emotional situations
+- prefer expressive gestures only when the user's utterance and visible behavior support it
+- do not choose extreme emotions unless clearly justified by the combined video and utterance context
+- if the context is ambiguous, choose a calm neutral response
 """.strip()
 
 
@@ -485,7 +524,7 @@ def generate_stream_sync(video_path: str, question: str, num_segments: int = 16)
             max_num=1,
             get_frame_by_duration=False
         )
-        pixel_values = pixel_values.to(model.device)
+        pixel_values = pixel_values.to(model.device,dtype=torch.float16)
 
         video_prefix = "".join([f"Frame{i+1}: <image>\n" for i in range(len(num_patches_list))])
         full_question = question + "\n" + video_prefix
