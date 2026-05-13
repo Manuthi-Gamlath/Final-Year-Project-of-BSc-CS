@@ -221,6 +221,65 @@
     .stars { color: var(--star); font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 10px; }
     .review-text { font-size: 0.875rem; color: #B8C3D9; line-height: 1.65; }
 
+    /* ── Add Review Form ── */
+    .add-review-section {
+      position: relative; z-index: 1;
+      padding: 0 40px 60px;
+    }
+    .add-review-form {
+      max-width: 600px; margin: 40px auto 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 36px 32px;
+    }
+    .form-row {
+      display: flex; gap: 16px; flex-wrap: wrap;
+    }
+    .form-group {
+      display: flex; flex-direction: column; gap: 8px;
+      flex: 1; min-width: 180px; margin-bottom: 18px;
+    }
+    .form-group label {
+      font-size: 0.8rem; font-weight: 600; color: var(--accent);
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+      color: var(--text); font-family: inherit; font-size: 0.9rem;
+      outline: none; transition: border-color 0.2s ease;
+      resize: none;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: var(--accent);
+    }
+    .form-group textarea { min-height: 100px; }
+    .star-picker { display: flex; gap: 6px; }
+    .star-picker input[type="radio"] { display: none; }
+    .star-picker label {
+      font-size: 1.6rem; cursor: pointer; color: #334155;
+      transition: color 0.15s ease; text-transform: none; letter-spacing: 0;
+    }
+    .star-picker input[type="radio"]:checked ~ label,
+    .star-picker label:hover,
+    .star-picker label:hover ~ label { color: var(--star); }
+    /* RTL trick: reverse order so hover highlights correctly */
+    .star-picker { flex-direction: row-reverse; justify-content: flex-end; }
+    .star-picker label:hover,
+    .star-picker label:hover ~ label { color: var(--star); }
+    .star-picker input[type="radio"]:checked ~ label { color: var(--star); }
+    .form-submit-row { display: flex; justify-content: flex-end; margin-top: 4px; }
+    .review-success {
+      display: none; text-align: center; padding: 14px;
+      background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.3);
+      border-radius: 10px; color: var(--accent2); font-size: 0.9rem;
+      margin-top: 16px;
+    }
+
     /* ── CTA Banner ── */
     .cta-banner {
       position: relative; z-index: 1;
@@ -416,6 +475,57 @@
     </div>
   </section>
 
+  <!-- Add Review -->
+  <section class="add-review-section">
+    <div class="section-divider">
+      <h2>Share your experience</h2>
+      <p>Had a conversation with SELA? We'd love to hear what you think.</p>
+      <div class="divider-line"></div>
+    </div>
+
+    <form class="add-review-form" id="reviewForm" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="reviewName">Your name</label>
+          <input type="text" id="reviewName" placeholder="e.g. Alex M." maxlength="40" required />
+        </div>
+        <div class="form-group">
+          <label for="reviewRole">Role / occupation</label>
+          <input type="text" id="reviewRole" placeholder="e.g. Student" maxlength="40" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Rating</label>
+        <div class="star-picker" id="starPicker">
+          <input type="radio" name="rating" id="star5" value="5" />
+          <label for="star5" title="5 stars">★</label>
+          <input type="radio" name="rating" id="star4" value="4" />
+          <label for="star4" title="4 stars">★</label>
+          <input type="radio" name="rating" id="star3" value="3" />
+          <label for="star3" title="3 stars">★</label>
+          <input type="radio" name="rating" id="star2" value="2" />
+          <label for="star2" title="2 stars">★</label>
+          <input type="radio" name="rating" id="star1" value="1" />
+          <label for="star1" title="1 star">★</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reviewText">Your review</label>
+        <textarea id="reviewText" placeholder="Tell us about your experience with SELA…" maxlength="400" required></textarea>
+      </div>
+
+      <div class="form-submit-row">
+        <button type="submit" class="btn btn-primary">Post Review</button>
+      </div>
+
+      <div class="review-success" id="reviewSuccess">
+        ✓ Thank you! Your review has been added.
+      </div>
+    </form>
+  </section>
+
   <!-- CTA Banner -->
   <div class="cta-banner">
     <h2>Ready to start your first conversation?</h2>
@@ -430,6 +540,109 @@
   <footer>
     <p>© 2025 SELA — Socially Aware Embodied Language Agent. All rights reserved.</p>
   </footer>
+
+  <script>
+    // ── Review System ──────────────────────────────────────────────
+    const REVIEWS_KEY = 'sela_user_reviews';
+
+    function getStoredReviews() {
+      try { return JSON.parse(localStorage.getItem(REVIEWS_KEY)) || []; }
+      catch { return []; }
+    }
+
+    function saveReview(review) {
+      const reviews = getStoredReviews();
+      reviews.push(review);
+      localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviews));
+    }
+
+    function buildStars(rating) {
+      return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+    }
+
+    function getInitial(name) {
+      return (name || '?').trim().charAt(0).toUpperCase();
+    }
+
+    function createReviewCard(review) {
+      const card = document.createElement('div');
+      card.className = 'review-card';
+      card.innerHTML = `
+        <div class="review-header">
+          <div class="review-avatar">${getInitial(review.name)}</div>
+          <div class="review-meta">
+            <div class="review-name">${escapeHtml(review.name)}</div>
+            <div class="review-role">${escapeHtml(review.role || 'SELA User')}</div>
+          </div>
+        </div>
+        <div class="stars">${buildStars(review.rating)}</div>
+        <p class="review-text">"${escapeHtml(review.text)}"</p>
+      `;
+      return card;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderStoredReviews() {
+      const grid = document.querySelector('.reviews-grid');
+      const stored = getStoredReviews();
+      stored.forEach(r => grid.appendChild(createReviewCard(r)));
+    }
+
+    // Render any previously saved reviews on load
+    renderStoredReviews();
+
+    // Form submission
+    document.getElementById('reviewForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById('reviewName').value.trim();
+      const role = document.getElementById('reviewRole').value.trim();
+      const text = document.getElementById('reviewText').value.trim();
+      const ratingInput = document.querySelector('input[name="rating"]:checked');
+
+      if (!name) {
+        document.getElementById('reviewName').focus();
+        return;
+      }
+      if (!text) {
+        document.getElementById('reviewText').focus();
+        return;
+      }
+      const rating = ratingInput ? parseInt(ratingInput.value, 10) : 5;
+
+      const review = { name, role, rating, text };
+      saveReview(review);
+
+      // Append card to grid
+      const grid = document.querySelector('.reviews-grid');
+      const card = createReviewCard(review);
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(16px)';
+      grid.appendChild(card);
+      requestAnimationFrame(() => {
+        card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      });
+
+      // Reset form
+      this.reset();
+      const success = document.getElementById('reviewSuccess');
+      success.style.display = 'block';
+      setTimeout(() => { success.style.display = 'none'; }, 3500);
+
+      // Scroll to the new card
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  </script>
 
 </body>
 </html>
